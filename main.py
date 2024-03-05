@@ -4,12 +4,9 @@ from aiohttp import web
 from evdev import InputDevice, ecodes
 from time import sleep
 
-sio = socketio.AsyncServer(cors_allowed_origins="ws://piterminator.local:8080")
+sio = socketio.AsyncServer(cors_allowed_origins="ws://piservername.local:8080")
 app = web.Application()
 sio.attach(app)
-
-# Device's Bluetooth UUID
-devID = "7B:D2:C0:E6:78:57"
 
 
 async def helper():

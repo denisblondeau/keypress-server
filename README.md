@@ -1,16 +1,17 @@
 <div align="center">
 
-  <h1>SonosRemote</h1>
+  <h1>keypress-server</h1>
   
   <p>
-    This Swift/SwiftUI (MacOS) demo receives keypresses from a bluetooth remote connected to a Raspberry Pi server and forwards those commands, using unsupported (i.e. unofficial) Sonos API requests, to a Sonos controller (i.e. Sonos speakers). 
+    This python demo receives keypresses from a bluetooth remote connected to a Raspberry Pi and forwards those commands to a client via Socket IO. It has been specifically created to be the companion app to the MacOS Swift demo application SonosRemote.
+
 
   </p>
   
 <p>
   
-  ![Static Badge](https://img.shields.io/badge/macOS-14%2B-greeen)
-  ![Static Badge](https://img.shields.io/badge/Xcode-15%2B-blue)
+  ![Static Badge](https://img.shields.io/badge/Python-3.11.2-greeen)
+  ![Static Badge](https://img.shields.io/badge/Raspberry_Pi-4-blue)
 
 </p>
 </div>
@@ -19,36 +20,58 @@
 
 This demo:
 
-- Connects to a specific Sonos controller on the local network.
-- Sends the following commands to the Sonos controller: Play/Pause, Previous Track, Next Track, Volume Up, Volume Down.
-- Those commands are received from a bluetooth remote connected to a Raspberry Pi running a Socket IO server (Python application).
-- Displays a MacOS menu bar application that let you play/pause the Sonos controller. The menu bar application also displays current play/pause status as well as current Sonos volume level.
-- Subscribes to Sonos events (e.g. monitors play/pause state, volume level).
+- Waits for specific keypresses received from a Bluetooth remote such as this one:
+
+![alt text](Remote.jpg)
+
+- In response to a keypress, sends the following commands to the client: Play/Pause, Previous Track, Next Track, Volume Up, Volume Down.
 
 ### Prerequisites
 
 - Before building/running this application:
- - Install the latest release of the SonosAPI package: https://github.com/denisblondeau/SonosAPI
- - Install the Socket.IO-Client-Swift package: https://github.com/socketio/socket.io-client-swift
- - Install and run the Sonos-Remote python server on a Raspberry Pi: 
 
-- In SonosModel.swift, you need to:
- - Set the callback URL. The callback URL is used by the Sonos coordinator to notify this demo of specific events.
- - Set the coodinator's name. This is the name of the Sonos Room you wish to control. You can find that name in the Sonos application.
- - Set the server URL. This is the Pi server hosting the SocketIO application that is receiving then forwarding the bluetooth remote's keypress to this application.
+ - Set up a Raspberry Pi. For this demo, a headless Raspberry Pi 4 was used but other models should work.
+
+ - Pair a bluetooth remote to the Raspberry Pi. Put the remote into pairing mode and from the pi console:
+    - bluetoothctl
+    - agent on
+    - scan on
+    - Once you find the remote in the list, use its address to trust, pair and connect to it:
+
+      - trust 0A:EC:78:1A:19:5D
+      - pair 0A:EC:78:1A:19:5D
+      - connect 0A:EC:78:1A:19:5D
+    - agent off
+    - quit
+
+- In your python environment, install (see requirements.txt):
+  - aiohttp: https://pypi.org/project/aiohttp/
+  - evdev: https://pypi.org/project/evdev/
+  - python-socketio: https://pypi.org/project/python-socketio/
+
+
+ - In main.py, before running the server, you need to set two variables:
 
 ```bash
-    private var callbackURL = URL(string: "http://192.168.0.1:1337")
-    private var coordinatorName = "Sonos Room"
-    private var serverURL = URL(string: "http://piserver.local:8080")
+  # Raspberry pi server name and port.
+   sio = socketio.AsyncServer(cors_allowed_origins="ws://piservername.local:8080")
+
+  # Path for bluetooth remote on this app's server.
+	devPath = "/dev/input/event2"
 ```
 
+- To figure out which event your bluetooth remote is connected to you can run the following once evdev is installed:
+
+ ```bash
+  $ python -m evdev.evtest
+ ```
 ### Testing
 
-Once you have launched this application:
+*** Before launching the python server, make sure that your bluetooth remote is connected and that devPath is set to the correct event; otherwise, the application will hang. If everything is running correctly you will see the following in the console: 
 
-    1) Select a Sonos group in the demo.
-    2) Launch the Sonos application on your mobile device and select the same group that you selected in the demo.
-    3) Changing the volume in the Sonos application on your mobile device will automatically adjust the volume in the demo application.
+```bash
+  ======== Running on http://0.0.0.0:8080 ========
+(Press CTRL+C to quit)
+ ```
 
-
+Your server is now ready to receive keypresses from the bluetooth remote and forward those keypresses to a client application.

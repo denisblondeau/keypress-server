@@ -3,7 +3,7 @@
   <h1>keypress-server</h1>
   
   <p>
-    This python demo receives keypresses from a bluetooth remote connected to a Raspberry Pi and forwards those commands to a client via Socket IO. It has been specifically created to be the companion app to the MacOS Swift demo application SonosRemote.
+    This python demo receives keypresses from a bluetooth remote connected to a Raspberry Pi and forwards those commands to a client via Socket IO. It has been specifically created to be the companion app to the MacOS Swift demo application SonosRemote: https://github.com/denisblondeau/SonosRemote
 
 
   </p>
